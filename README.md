@@ -2,55 +2,50 @@
 
 ### Junior Frontend Developer · React · TypeScript
 
-I build responsive web applications with React and TypeScript, focusing on clean UI, API integration, authentication, routing, state management, and reusable components.
+I build responsive web applications with React and TypeScript, focusing on API integration, routing, state management and reusable UI.
 
 ## 🛠 Tech Stack
 
 **Frontend:** React, TypeScript, JavaScript (ES6+), HTML5, CSS3, SCSS  
 **State & Routing:** Redux Toolkit, Context API, React Router  
-**API & Forms:** REST API, Axios, Fetch API, React Hook Form, Yup  
+**API & Forms:** REST API, Axios, React Hook Form, Yup  
 **Tools:** Git, GitHub, npm
 
 ## 🚀 Featured Projects
 
+### 🎬 [VK Marusya](https://github.com/Kolomiets94/VKMarusya) · [Live Demo](https://kolomiets94.github.io/VKMarusya/)
+Movie/TV discovery SPA powered by the TVmaze API.
+
+- React + TypeScript + Redux Toolkit
+- Live API catalogue and debounced search
+- Show details and client-side routing
+- Favorites persisted in localStorage
+- Responsive UI
+
 ### 🌍 [TravelBlog](https://github.com/Kolomiets94/travel-blog)
-A travel community SPA where users can publish posts, comment, manage their profile, and interact with protected pages.
+Travel community SPA with authentication, protected pages and REST API integration.
 
 - React + TypeScript
 - Registration and authentication
-- CRUD operations for posts
-- Comments and user profile editing
-- Protected routes
-- REST API integration with Axios
-- React Hook Form + Yup validation
+- Create posts with images
+- Comments
+- Profile, avatar and password editing
+- React Hook Form + Yup
 - Responsive SCSS layout
 
 ### 🎵 [TypeScript Audioplayer](https://github.com/Kolomiets94/--TypeScript-Audioplayer)
-A responsive music application with authentication, favorites, pagination, and a custom HTML5 audio player.
+Full-stack music portfolio project with a React frontend and Express API.
 
 - React + TypeScript + Redux Toolkit
-- JWT authentication
-- Custom audio controls and keyboard shortcuts
-- Favorites
-- Desktop pagination and mobile lazy loading
-- Express-based local API
-- Responsive SCSS/BEM UI
-
-### 🎬 [VK Marusya](https://github.com/Kolomiets94/VKMarusya)
-A movie discovery SPA for searching films, browsing genres, viewing movie details, and managing favorites.
-
-- React + TypeScript + Redux Toolkit
-- Movie search with debounce
-- Top movies and genre catalog
-- Movie details and trailers
-- Authentication and registration
-- Favorites and user account
-- Axios API integration
+- HTML5 audio playback, seeking and skip controls
+- JWT authentication API
+- Favorites API
+- Express backend
 - Responsive UI
 
 ## 💼 What I'm Looking For
 
-I'm looking for a **Junior Frontend Developer / React Developer** role where I can contribute to real products, strengthen my frontend engineering skills, and grow with an experienced team.
+I'm looking for a **Junior Frontend Developer / React Developer** role where I can contribute to real products and grow with an experienced team.
 
 I'm open to **remote opportunities**.
 
