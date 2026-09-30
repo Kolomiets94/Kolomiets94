@@ -33,7 +33,7 @@ Travel community SPA with authentication, protected pages and REST API integrati
 - React Hook Form + Yup
 - Responsive SCSS layout
 
-### 🎵 [TypeScript Audioplayer](https://github.com/Kolomiets94/--TypeScript-Audioplayer)
+### 🎵 [TypeScript Audioplayer](https://github.com/Kolomiets94/--TypeScript-Audioplayer) · [Live Demo](https://kolomiets94.github.io/--TypeScript-Audioplayer/)
 Full-stack music portfolio project with a React frontend and Express API.
 
 - React + TypeScript + Redux Toolkit
