@@ -22,7 +22,7 @@ Movie/TV discovery SPA powered by the TVmaze API.
 - Favorites persisted in localStorage
 - Responsive UI
 
-### 🌍 [TravelBlog](https://github.com/Kolomiets94/travel-blog)
+### 🌍 [TravelBlog](https://github.com/Kolomiets94/travel-blog) · [Live Demo](https://kolomiets94.github.io/travel-blog/)
 Travel community SPA with authentication, protected pages and REST API integration.
 
 - React + TypeScript
