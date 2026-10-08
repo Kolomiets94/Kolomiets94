@@ -1,0 +1,27 @@
+name: QA Playwright
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'qa-portfolio/**'
+      - '.github/workflows/qa-playwright.yml'
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: qa-portfolio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: qa-portfolio/playwright-report/
+          retention-days: 7
