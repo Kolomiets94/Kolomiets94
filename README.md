@@ -2,7 +2,7 @@
 
 ### Junior Frontend Developer · React · TypeScript
 
-I build responsive web applications with **React** and **TypeScript**, focusing on API integration, state management, routing and reusable UI. I'm looking for a **remote Junior Frontend / React Developer** role.
+I build responsive web applications with **React** and **TypeScript**, focusing on API integration, state management, routing and reusable UI. I'm looking for a **Junior Frontend / React Developer** role. I'm open to **remote, hybrid, and on-site** positions and willing to relocate to **Moscow or Saint Petersburg**.
 
 ## 🛠 Tech Stack
 
@@ -58,7 +58,7 @@ Music portfolio project with a React frontend and Express API.
 
 ## 💼 What I'm Looking For
 
-I'm open to **remote Junior Frontend Developer / React Developer** opportunities where I can contribute to a real product and continue growing with an experienced team.
+I'm open to **Junior Frontend Developer / React Developer** opportunities in **remote, hybrid, or on-site** formats. Based in Yekaterinburg, Russia; **willing to relocate to Moscow or Saint Petersburg**. I want to contribute to a real product and continue growing with an experienced team.
 
 ## 📫 Contact
 
