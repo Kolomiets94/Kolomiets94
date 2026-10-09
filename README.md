@@ -19,13 +19,13 @@ I build responsive web applications with **React** and **TypeScript**, focusing 
 ## 🚀 Featured Projects
 
 ### 🎬 VK Marusya
-Movie/TV discovery SPA powered by the TVmaze API.
+Russian film catalogue SPA with a local editorial selection. Detail pages for IDs outside the local selection use the TVmaze API.
 
 **React · TypeScript · Redux Toolkit · REST API · React Router**
 
 [Live Demo](https://kolomiets94.github.io/VKMarusya/) · [Code](https://github.com/Kolomiets94/VKMarusya)
 
-- Live API catalogue and debounced search
+- Local film catalogue and debounced search
 - Show details and client-side routing
 - Favorites persisted in localStorage
 - Responsive UI
@@ -55,6 +55,14 @@ Music portfolio project with a React frontend and Express API.
 - JWT authentication API
 - Favorites API
 - Responsive interface
+
+## 🧪 QA Portfolio
+
+Learning project based on VK Marusya: a test plan, 20 manual test cases, functional/responsive/accessibility checklists, one reproduced installation bug, and 10 Playwright scenarios.
+
+[QA Materials](https://github.com/Kolomiets94/junior-qa-testing-portfolio/tree/qa/vk-marusya-portfolio) · [Pull Request #1](https://github.com/Kolomiets94/junior-qa-testing-portfolio/pull/1) · [Verification Report](https://github.com/Kolomiets94/junior-qa-testing-portfolio/blob/qa/vk-marusya-portfolio/reports/verification.md)
+
+The PR is open and has not been merged. Manual scenarios have not been run. Test syntax was checked; browser execution was blocked by Chromium installation in the verification environment.
 
 ## 💼 What I'm Looking For
 
