@@ -35,7 +35,7 @@ Music portfolio project with a React frontend and Express API.
 
 **React · TypeScript · Redux Toolkit · HTML5 Audio · Express**
 
-[Live Demo](https://kolomiets94.github.io/--TypeScript-Audioplayer/) · [Code](https://github.com/Kolomiets94/--TypeScript-Audioplayer)
+[Live Demo](https://kolomiets94.github.io/audioplayer/) · [Code](https://github.com/Kolomiets94/audioplayer)
 
 - Audio playback, seeking and skip controls
 - Search and favorites
