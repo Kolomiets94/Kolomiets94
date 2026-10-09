@@ -58,11 +58,11 @@ Music portfolio project with a React frontend and Express API.
 
 ## 🧪 QA Portfolio
 
-Learning project based on VK Marusya: a test plan, 20 manual test cases, functional/responsive/accessibility checklists, one reproduced installation bug, and 10 Playwright scenarios.
+Learning project based on VK Marusya: a test plan, 20 manual test cases, functional/responsive/accessibility checklists, one reproduced and fixed installation bug, and 10 Playwright scenarios.
 
-[QA Materials](https://github.com/Kolomiets94/junior-qa-testing-portfolio/tree/qa/vk-marusya-portfolio) · [Pull Request #1](https://github.com/Kolomiets94/junior-qa-testing-portfolio/pull/1) · [Verification Report](https://github.com/Kolomiets94/junior-qa-testing-portfolio/blob/qa/vk-marusya-portfolio/reports/verification.md)
+[QA Materials](https://github.com/Kolomiets94/junior-qa-testing-portfolio/tree/main) · [Pull Request #1](https://github.com/Kolomiets94/junior-qa-testing-portfolio/pull/1) · [Verification Report](https://github.com/Kolomiets94/junior-qa-testing-portfolio/blob/main/reports/retest-2026-10-09.md)
 
-The PR is open and has not been merged. Manual scenarios have not been run. Test syntax was checked; browser execution was blocked by Chromium installation in the verification environment.
+The portfolio PR has been merged. All 10 Playwright scenarios passed against a local production build in Chromium 153. Manual scenarios have not been run; full accessibility, cross-browser coverage and the deployed site are not yet verified.
 
 ## 💼 What I'm Looking For
 
