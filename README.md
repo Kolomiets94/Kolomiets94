@@ -30,6 +30,19 @@ Russian film catalogue SPA with a local editorial selection. Detail pages for ID
 - Favorites persisted in localStorage
 - Responsive UI
 
+### 🎵 TypeScript Audioplayer
+Music portfolio project with a React frontend and Express API.
+
+**React · TypeScript · Redux Toolkit · HTML5 Audio · Express**
+
+[Live Demo](https://kolomiets94.github.io/--TypeScript-Audioplayer/) · [Code](https://github.com/Kolomiets94/--TypeScript-Audioplayer)
+
+- Audio playback, seeking and skip controls
+- Search and favorites
+- JWT authentication API
+- Favorites API
+- Responsive interface
+
 ### 🌍 TravelBlog
 Travel community SPA with authentication, protected pages and REST API integration.
 
@@ -43,18 +56,12 @@ Travel community SPA with authentication, protected pages and REST API integrati
 - Profile, avatar and password editing
 - Portfolio demo mode for GitHub Pages
 
-### 🎵 TypeScript Audioplayer
-Music portfolio project with a React frontend and Express API.
+### 🏙️ Landing-page
+Adaptive promotional landing page with SCSS modules and an SVG icon sprite.
 
-**React · TypeScript · Redux Toolkit · HTML5 Audio · Express**
+**HTML · SCSS · responsive layout**
 
-[Live Demo](https://kolomiets94.github.io/--TypeScript-Audioplayer/) · [Code](https://github.com/Kolomiets94/--TypeScript-Audioplayer)
-
-- Audio playback, seeking and skip controls
-- Search and favorites
-- JWT authentication API
-- Favorites API
-- Responsive interface
+[Code](https://github.com/Kolomiets94/Landing-page)
 
 ## 🧪 QA Portfolio
 
