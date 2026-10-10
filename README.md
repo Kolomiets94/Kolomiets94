@@ -65,11 +65,11 @@ Adaptive promotional landing page with SCSS modules and an SVG icon sprite.
 
 ## 🧪 QA Portfolio
 
-Learning project based on VK Marusya: a test plan, 20 manual test cases, functional/responsive/accessibility checklists, one reproduced and fixed installation bug, and 10 Playwright scenarios.
+Learning project based on VK Marusya: a test plan, 20 manual test cases, functional/responsive/accessibility checklists, four reproduced bug reports (two fixed, two open), 10 Playwright scenarios, and a Postman collection for the TVmaze fallback API.
 
 [QA Materials](https://github.com/Kolomiets94/junior-qa-testing-portfolio/tree/main) · [Pull Request #1](https://github.com/Kolomiets94/junior-qa-testing-portfolio/pull/1) · [Verification Report](https://github.com/Kolomiets94/junior-qa-testing-portfolio/blob/main/reports/retest-2026-10-09.md)
 
-The portfolio PR has been merged. All 10 Playwright scenarios passed against a local production build in Chromium 153. Manual scenarios have not been run; full accessibility, cross-browser coverage and the deployed site are not yet verified.
+The portfolio PR has been merged. All 10 Playwright scenarios passed against a local production build in Chromium 153. A separate [Newman API run](https://github.com/Kolomiets94/junior-qa-testing-portfolio/blob/main/reports/api-2026-10-10.md) passed 3 requests and 4 assertions. Two open audioplayer issues were reproduced on GitHub Pages. The 20 manual VK Marusya scenarios have not been run; full accessibility, cross-browser coverage and its deployed site are not yet verified.
 
 ## 💼 What I'm Looking For
 
