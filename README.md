@@ -63,6 +63,14 @@ Adaptive promotional landing page with SCSS modules and an SVG icon sprite.
 
 [Code](https://github.com/Kolomiets94/Landing-page)
 
+## 🌱 Open Source
+
+### OpenSlop — user message theme colors
+
+[Pull Request #909](https://github.com/openslop/openslop/pull/909) — **Open; awaiting review** (2026-10-10).
+
+Proposed a React UI fix using semantic CSS tokens: user message bubbles match Generate buttons in light mode while retaining the original dark-mode colors. Prepared with AI assistance. Local lint, formatting, TypeScript, dead-code checks, production build, and 1,820 existing tests passed; visual verification remains outstanding. The PR has not been merged.
+
 ## 🧪 QA Portfolio
 
 Learning project based on VK Marusya: a test plan, 20 manual test cases, functional/responsive/accessibility checklists, four reproduced bug reports (two fixed, two open), 10 Playwright scenarios, and a Postman collection for the TVmaze fallback API.
