@@ -63,6 +63,14 @@ Adaptive promotional landing page with SCSS modules and an SVG icon sprite.
 
 [Code](https://github.com/Kolomiets94/Landing-page)
 
+### 📊 Paper Strategy Lab — Trading Analytics Demo
+
+Standalone, mobile-friendly HTML/JavaScript portfolio demo for **read-only paper-trade analytics**. Includes an equity/PnL chart, win rate, profit factor, drawdown and local JSON import. Uses **synthetic trade data only**; no live trading or API credentials. A separate React/TypeScript dashboard is still under development.
+
+**HTML · CSS · JavaScript · Data visualization**
+
+[Live Demo](https://kolomiets94.github.io/paper-strategy-lab-demo/) · [Code](https://github.com/Kolomiets94/paper-strategy-lab-demo)
+
 ## 🌱 Open Source
 
 ### OpenSlop — user message theme colors
