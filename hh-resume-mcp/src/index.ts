@@ -58,4 +58,79 @@ server.tool(
   })
 );
 
-await server.connect(new StdioServerTransport());
+
+
+server.tool(
+  "career_recruiter_search_brief",
+  "Сформировать план поиска публичных профессиональных контактов рекрутеров и HR по заданной вакансии. Это исследовательское задание для ИИ-клиента, а не встроенный веб-поиск.",
+  {
+    target_role: z.string().min(2).max(200).default("Frontend Developer (React, TypeScript)"),
+    location: z.string().min(2).max(200).default("Екатеринбург или удалённо по России"),
+    skills: z.array(z.string().min(1).max(80)).max(30).default(["React", "TypeScript", "JavaScript"]),
+    vacancy_url: z.string().url().optional(),
+    company_names: z.array(z.string().min(1).max(160)).max(30).default([]),
+    sources: z.array(z.enum(["LinkedIn", "Telegram", "Хабр Карьера", "Getmatch", "карьерные страницы компаний", "HH.ru", "GeekJob", "SuperJob", "Работа России"])).default(["LinkedIn", "Telegram", "Хабр Карьера", "Getmatch", "карьерные страницы компаний", "HH.ru", "GeekJob", "SuperJob", "Работа России"])
+  },
+  async ({ target_role, location, skills, vacancy_url, company_names, sources }) => ({
+    content: [{
+      type: "text",
+      text: [
+        "ЗАДАНИЕ ДЛЯ ПОИСКА ПУБЛИЧНЫХ ПРОФЕССИОНАЛЬНЫХ КОНТАКТОВ",
+        "Роль: " + target_role,
+        "Локация/формат: " + location,
+        "Навыки: " + skills.join(", "),
+        "Компании для приоритетной проверки: " + (company_names.length ? company_names.join(", ") : "найти компании с релевантными открытыми вакансиями"),
+        "URL вакансии: " + (vacancy_url ?? "не указан"),
+        "Источники: " + sources.join(", "),
+        "",
+        "Найди только публичные профессиональные сведения: имя, должность, компания, рабочий профиль или опубликованный рабочий email, ссылка на источник, связанная вакансия и дата проверки.",
+        "Приоритетные должности: IT Recruiter, Technical Recruiter, Talent Acquisition, HR / специалист по подбору.",
+        "Для Telegram используй только публичные каналы, публикации вакансий и контакты, которые автор сам указал для рабочих обращений.",
+        "Не пытайся получить личные телефоны, личные email, закрытые данные, cookies или доступ к аккаунтам. Не обходи авторизацию, CAPTCHA, paywall или ограничения сайтов.",
+        "Не угадывай адреса email. Если контакт не опубликован, укажи «не найден публично». Для каждого факта приложи URL-источник и отметь, что именно подтверждено.",
+        "Отфильтруй контакты по наличию актуальной Frontend-вакансии React/TypeScript либо явной связи рекрутера с наймом frontend-разработчиков.",
+        "Верни таблицу: контакт | роль | компания | релевантная вакансия | публичный способ связи | источник | дата проверки | уверенность.",
+        "Ничего не отправляй и не инициируй коннекты."
+      ].join("\n")
+    }]
+  })
+);
+
+server.tool(
+  "career_prepare_recruiter_message",
+  "Подготовить персональное сообщение рекрутеру на основе публичной контактной информации и конкретной вакансии. Ничего не отправляет.",
+  {
+    recruiter_name: z.string().max(160).optional(),
+    recruiter_role: z.string().max(160).optional(),
+    company: z.string().min(1).max(200),
+    vacancy_title: z.string().min(2).max(200),
+    vacancy_url: z.string().url().optional(),
+    vacancy_requirements: z.string().max(12000).optional(),
+    public_contact_context: z.string().max(4000).optional(),
+    candidate_profile: z.string().min(30).max(12000),
+    channel: z.enum(["LinkedIn", "Telegram", "email"]).default("LinkedIn")
+  },
+  async ({ recruiter_name, recruiter_role, company, vacancy_title, vacancy_url, vacancy_requirements, public_contact_context, candidate_profile, channel }) => ({
+    content: [{
+      type: "text",
+      text: [
+        "ПОДГОТОВЬ ЧЕРНОВИК ПЕРСОНАЛЬНОГО ОБРАЩЕНИЯ — НЕ ОТПРАВЛЯЙ ЕГО",
+        "Канал: " + channel,
+        "Обращение: " + (recruiter_name ?? "без имени"),
+        "Роль контакта: " + (recruiter_role ?? "не указана"),
+        "Компания: " + company,
+        "Вакансия: " + vacancy_title,
+        "Ссылка: " + (vacancy_url ?? "не указана"),
+        "Требования вакансии: " + (vacancy_requirements ?? "не предоставлены"),
+        "Публичный контекст контакта: " + (public_contact_context ?? "не предоставлен"),
+        "",
+        "Профиль кандидата:",
+        candidate_profile,
+        "",
+        "Составь короткое, естественное и конкретное сообщение. Укажи, почему обращение адресовано именно этому рекрутеру и чем опыт кандидата соответствует вакансии. Не выдумывай коммерческий опыт, метрики, навыки, имя или знакомство. Не называй английский свободным, если уровень не указан. Не делай массовую рассылку и не дави на адресата.",
+        "Верни также 2 варианта темы/первой строки и короткое объяснение персонализации. Любая отправка требует отдельного явного подтверждения пользователя."
+      ].join("\n")
+    }]
+  })
+);
+\nawait server.connect(new StdioServerTransport());
