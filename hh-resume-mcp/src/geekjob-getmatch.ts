@@ -87,7 +87,7 @@ async function enrichCards(cards: Card[], limit = 8): Promise<Card[]> {
       const main = (html.match(/<(?:main|article)\b[^>]*>([\s\S]*?)<\/(?:main|article)>/i) || [])[1] ?? html;
       const detail = decode(main).slice(0, 6500);
       const combined = [description ? `Описание: ${decode(description)}` : "", detail]
-        .filter(Boolean).join("\\n").slice(0, 12000);
+        .filter(Boolean).join("\n").slice(0, 12000);
       return { ...card, context: combined || card.context };
     } catch {
       return card;
@@ -111,7 +111,6 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
     },
     async ({ query, page }) => {
       const url = new URL("https://gkjb.ru/vacancies");
-      url.searchParams.set("q", query);
       url.searchParams.set("page", String(page));
       try {
         const html = await fetchPublic(url.toString());
@@ -136,9 +135,8 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       remote_only: z.boolean().default(false)
     },
     async ({ query, remote_only }) => {
-      const url = new URL("https://getmatch.ru/vacancies");
-      url.searchParams.set("q", query);
-      if (remote_only) url.searchParams.set("format", "remote");
+      const url = new URL("https://getmatch.ru/vacancies/js_frontend");
+      if (remote_only) url.pathname = "/vacancies/js_frontend/remote";
       try {
         const html = await fetchPublic(url.toString());
         const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/[a-z0-9-]+/i)
