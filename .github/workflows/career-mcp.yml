@@ -1,4 +1,4 @@
-name: Career MCP typecheck and public-source smoke tests
+name: Career MCP typecheck and live source checks
 
 on:
   push:
