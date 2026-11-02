@@ -81,8 +81,8 @@ function scoreVacancy(v: z.infer<typeof vacancySchema>) {
   if (/middle|мидл/.test(text)) score += 4;
   if (v.remote) score += 12;
   if (/екатеринбург/i.test(v.location)) score += 10;
-  if (v.salary_from != null && v.salary_from >= 60000) score += 5;
-  if (v.salary_to != null && v.salary_to >= 80000) score += 5;
+  if (v.currency === "RUB" && v.salary_from != null && v.salary_from >= 60000) score += 5;
+  if (v.currency === "RUB" && v.salary_to != null && v.salary_to >= 80000) score += 5;
   if (/senior|lead|руководитель|3\+ лет|4\+ лет|5\+ лет/.test(text)) score -= 25;
   if (/qa engineer|тестировщик|поддержк|оператор|менеджер продаж/.test(text)) score -= 50;
   return score;
@@ -159,7 +159,7 @@ export function registerVacancyStoreTools(server: McpServer) {
         if (terms.length && !terms.some(t => haystack.includes(t))) return false;
         if (location && !v.location.toLowerCase().includes(location.toLowerCase())) return false;
         if (remote_only && !v.remote) return false;
-        if (min_salary && (v.salary_to ?? v.salary_from ?? 0) < min_salary) return false;
+        if (min_salary && (v.currency !== "RUB" || (v.salary_to ?? v.salary_from ?? 0) < min_salary)) return false;
         if (status !== "all" && v.status !== status) return false;
         if (exclude_irrelevant && /(qa|quality assurance|support engineer|customer support|оператор|тестировщик|специалист поддержки|техническая поддержка|менеджер продаж)/i.test(v.title)) return false;
         return true;
