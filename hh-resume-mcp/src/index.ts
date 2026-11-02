@@ -1,8 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { registerHhVacancyTools } from "./hh-vacancies.js";
 
-const server = new McpServer({ name: "hh-resume-mcp", version: "0.2.0" });
+const server = new McpServer({ name: "hh-resume-mcp", version: "0.3.0" });
+
+registerHhVacancyTools(server);
 
 server.tool(
   "hh_prepare_resume_review",
