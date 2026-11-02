@@ -137,9 +137,10 @@ export function registerVacancyStoreTools(server: McpServer) {
       remote_only: z.boolean().optional().default(false),
       min_salary: z.number().nonnegative().optional().default(0),
       status: z.enum(["all", "new", "seen", "applied", "rejected", "archived"]).optional().default("all"),
+      exclude_irrelevant: z.boolean().optional().default(true),
       limit: z.number().int().min(1).max(100).optional().default(30)
     },
-    async ({ query, location, remote_only, min_salary, status, limit }) => {
+    async ({ query, location, remote_only, min_salary, status, exclude_irrelevant, limit }) => {
       const rows = await readStore();
       const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
       const filtered = rows.filter(v => {
@@ -149,6 +150,7 @@ export function registerVacancyStoreTools(server: McpServer) {
         if (remote_only && !v.remote) return false;
         if (min_salary && (v.salary_to ?? v.salary_from ?? 0) < min_salary) return false;
         if (status !== "all" && v.status !== status) return false;
+        if (exclude_irrelevant && /(^|\\b)(qa|quality assurance|support engineer|customer support|оператор|тестировщик|специалист поддержки|техническая поддержка|менеджер продаж)(\\b|$)/i.test(v.title)) return false;
         return true;
       }).sort((a, b) => b.score - a.score || b.found_at.localeCompare(a.found_at)).slice(0, limit);
       const output = filtered.map(v => [
