@@ -35,7 +35,9 @@ for (const target of targets) {
     const count = [...html.matchAll(target.pattern)].length;
     console.log("[" + (response.ok && count > 0 ? "PASS" : "FAIL") + "] " + target.name + ": HTTP " + response.status + ", " + html.length + " bytes, " + count + " matching public links/cards");
     if (target.name === "Getmatch" && count === 0) {
-      console.log("Getmatch page title: " + ((html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i) || [])[1] || "not found"));
+      const titleStart = html.indexOf("<title");
+      const titleEnd = html.indexOf("</title>");
+      console.log("Getmatch page title: " + (titleStart >= 0 && titleEnd > titleStart ? html.slice(titleStart, titleEnd + 8) : "not found"));
       console.log("Getmatch script bundles: " + [...html.matchAll(/<script[^>]+src=["']([^"']+)/gi)].map(m => m[1]).slice(0, 20).join(" | "));
       for (const key of ["__NEXT_DATA__", "application/json", "vacancies/", "graphql", "api/"]) {
         const index = html.toLowerCase().indexOf(key.toLowerCase());
