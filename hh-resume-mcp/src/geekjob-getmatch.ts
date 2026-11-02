@@ -71,14 +71,14 @@ async function enrichCards(cards: Card[], limit = 8) {
     let detail = "";
     try {
       const html = await fetchPublic(card.url);
-      const description = (html.match(/<meta\\s+name=["']description["']\\s+content=["']([^"']+)/i) || [])[1] ?? "";
-      const main = (html.match(/<(?:main|article)\\b[^>]*>([\\s\\S]*?)<\\/(?:main|article)>/i) || [])[1] ?? html;
+      const description = (html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)/i) || [])[1] ?? "";
+      const main = (html.match(/<(?:main|article)\b[^>]*>([\s\S]*?)<\/(?:main|article)>/i) || [])[1] ?? html;
       detail = decode(main).slice(0, 6500);
-      if (description) detail = `Описание: ${decode(description)}\\n${detail}`;
+      if (description) detail = `Описание: ${decode(description)}\n${detail}`;
     } catch (e) {
       detail = `Не удалось открыть карточку для подробностей: ${String(e)}`;
     }
-    enriched.push(`**${card.title}**\\nКомпания: ${card.company || "не извлечена"}\\nЗарплата: ${card.salary || "не извлечена"}\\nЛокация: ${card.location || "не извлечена"}\\nУдалённо: ${card.remote ? "да" : "не подтверждено"}\\nСсылка: ${card.url}\\nТекст карточки: ${detail || card.context}`);
+    enriched.push(`**${card.title}**\nКомпания: ${card.company || "не извлечена"}\nЗарплата: ${card.salary || "не извлечена"}\nЛокация: ${card.location || "не извлечена"}\nУдалённо: ${card.remote ? "да" : "не подтверждено"}\nСсылка: ${card.url}\nТекст карточки: ${detail || card.context}`);
   }
   return enriched;
 }
@@ -99,7 +99,7 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
         const html = await fetchPublic(url.toString());
         const cards = parseCards(html, "https://gkjb.ru", /\/vacancy\/[a-z0-9-]+/i);
         const text = cards.length
-          ? cards.map(c => `**${c.title}**\n${c.company ? `Компания: ${c.company}\n` : ""}${c.salary ? `Зарплата: ${c.salary}\n` : ""}${c.location ? `Локация: ${c.location}\n` : ""}Удалённо: ${c.remote ? "да" : "не подтверждено"}\n${c.url}\nКонтекст: ${c.context}`).join("\n\n---\n\n")
+          ? (await enrichCards(cards)).join("\n\n---\n\n")
           : "Карточки не распознаны. Возможно, сайт изменил HTML или выдача требует другого параметра.";
         return { content: [{ type: "text", text: `Geekjob — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n\n${text}\n\nПроверьте грейд, занятость, зарплату и дату на странице вакансии перед импортом.` }] };
       } catch (e) {
