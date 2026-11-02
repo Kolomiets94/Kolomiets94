@@ -27,7 +27,7 @@ for (const target of targets) {
   try {
     const response = await fetch(target.url, {
       headers: {
-        "User-Agent": "CareerMCP-source-smoke-test/0.1 (read-only)",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
         "Accept": target.jsonOffers ? "application/json" : "text/html,application/xhtml+xml"
       },
       signal: AbortSignal.timeout(20000)
