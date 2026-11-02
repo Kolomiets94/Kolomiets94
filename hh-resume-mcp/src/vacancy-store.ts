@@ -121,7 +121,7 @@ export async function importVacancies(input: unknown[]) {
         }
       }
       await writeStore(rows);
-      return { content: [{ type: "text", text: `Импорт завершён. Новых: ${inserted}; обновлено совпадающих: ${updated}; всего в локальной базе: ${rows.length}. Данные сохранены в .career-data/vacancies.json.` }] };
+      return `Импорт завершён. Новых: ${inserted}; обновлено совпадающих: ${updated}; всего в локальной базе: ${rows.length}. Данные сохранены в .career-data/vacancies.json.`;
 }
 
 export function registerVacancyStoreTools(server: McpServer) {
