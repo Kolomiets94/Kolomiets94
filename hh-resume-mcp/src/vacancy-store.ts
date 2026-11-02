@@ -92,7 +92,7 @@ export async function importVacancies(input: unknown[]) {
   const vacancies = z.array(vacancySchema).min(1).max(100).parse(input);
 
       const rows = await readStore();
-      const index = new Map(rows.map((v, i) => [fingerprint(v), i]));
+      const index = new Map<string, number>(rows.map((v, i) => [fingerprint(v), i] as const));
       let inserted = 0;
       let updated = 0;
       for (const raw of vacancies) {
