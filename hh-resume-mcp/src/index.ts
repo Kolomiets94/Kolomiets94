@@ -3,11 +3,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { registerHhVacancyTools } from "./hh-vacancies.js";
 import { registerVacancyStoreTools } from "./vacancy-store.js";
+import { registerPublicSourceTools } from "./public-sources.js";
 
 const server = new McpServer({ name: "hh-resume-mcp", version: "0.3.0" });
 
 registerHhVacancyTools(server);
 registerVacancyStoreTools(server);
+registerPublicSourceTools(server);
 
 server.tool(
   "hh_prepare_resume_review",
