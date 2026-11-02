@@ -48,7 +48,7 @@ function toVacancy(card: Card, source: "GeekJob" | "Getmatch") {
     location: card.location.slice(0, 200), remote: card.remote,
     salary_from: amount(rub?.[1]) ?? null, salary_to: amount(rub?.[2]) ?? amount(rub?.[1]) ?? null,
     currency: "RUB", description: card.context.slice(0, 12000),
-    tags: ["frontend", "react", "typescript", source.toLowerCase()]
+    tags: [source.toLowerCase(), ...["frontend", "react", "typescript", "javascript"].filter(tag => `${card.title} ${card.context}`.toLowerCase().includes(tag))]
   };
 }
 
