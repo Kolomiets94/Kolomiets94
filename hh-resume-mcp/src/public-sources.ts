@@ -24,7 +24,7 @@ async function getHtml(url: string) {
 
 function extractHabr(html: string) {
   const rows = new Map<string, { title: string; url: string; context: string }>();
-  const re = /<a\b[^>]*href=["'](\/vacancies\/[^"'?#]+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  const re = /<a\b[^>]*href=["'](\/vacancies\/\d+)(?:[/?#]["']|["'])[^>]*>([\s\S]*?)<\/a>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
     const url = new URL(m[1], "https://career.habr.com").toString();
@@ -61,12 +61,27 @@ export function registerPublicSourceTools(server: McpServer) {
       page: z.number().int().min(1).max(20).default(1)
     },
     async ({ query, remote_only, page }) => {
+      const paths: Record<typeof query, string> = {
+        react_razrabotchik: "/vacancies/skills/react-js",
+        frontend_razrabotchik: "/vacancies/spec/development/frontend",
+        html_verstalshchik: "/vacancies/skills/html",
+        javascript_razrabotchik: "/vacancies/skills/javascript"
+      };
       const params = new URLSearchParams({ page: String(page) });
-      if (remote_only) params.set("remote", "true");
-      const url = `https://career.habr.com/vacancies/${query}?${params}`;
+      const url = `https://career.habr.com${paths[query]}?${params}`;
       try {
         const html = await getHtml(url);
-        const rows = extractHabr(html);
+        let rows = extractHabr(html);
+        rows = await Promise.all(rows.slice(0, 8).map(async row => {
+          try {
+            const detailHtml = await getHtml(row.url);
+            const detail = clean((detailHtml.match(/<(?:main|article)\\b[^>]*>([\\s\\S]*?)<\\/(?:main|article)>/i) || [])[1] ?? detailHtml).slice(0, 11000);
+            return { ...row, context: detail || row.context };
+          } catch {
+            return row;
+          }
+        }));
+        if (remote_only) rows = rows.filter(v => /можно удал[её]нно|удал[её]нн(?:ая|ый|о) работа|remote/i.test(v.context));
         const imported = rows.length ? await importVacancies(rows.map(v => ({
           title: v.title, url: v.url, source: "Хабр Карьера", description: v.context,
           tags: ["frontend", query.replaceAll("_", " ")]
@@ -105,7 +120,7 @@ export function registerPublicSourceTools(server: McpServer) {
             title: p.title.slice(0, 300), url: p.url, source: "Telegram",
             description: p.context.slice(0, 12000), tags: ["telegram", channel, ...terms.filter(t => p.context.toLowerCase().includes(t)).slice(0, 10)]
           }))) : "Импорт не выполнялся: публикации с явными признаками вакансии не найдены.";
-          output.push(`### @${channel} — ${matched.length} совпадений из ${posts.length} последних сообщений\\n${imported}`);
+          output.push(`### @${channel} — ${matched.length} совпадений из ${posts.length} последних сообщений\n${imported}`);
           output.push(matched.map(p => `**${p.title}**\n${p.url}\n${p.context}`).join("\n\n---\n\n") || "Совпадений по ключевым словам не найдено.");
         } catch (e) {
           output.push(`### @${channel}\nНе удалось прочитать публичную ленту: ${String(e)}. Ссылка: ${url}`);
