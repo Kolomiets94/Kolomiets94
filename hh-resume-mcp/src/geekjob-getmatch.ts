@@ -13,9 +13,9 @@ const decode = (s: string) => s
   .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
   .replace(/\s+/g, " ").trim();
 
-async function fetchPublic(url: string) {
+async function fetchPublic(url: string, accept = "text/html,application/xhtml+xml") {
   const response = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
+    headers: { "User-Agent": UA, Accept: accept },
     signal: AbortSignal.timeout(20000),
     redirect: "manual"
   });
@@ -27,7 +27,7 @@ async function fetchPublic(url: string) {
       throw new Error("Refused cross-host or non-HTTPS redirect");
     }
     const second = await fetch(next, {
-      headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
+      headers: { "User-Agent": UA, Accept: accept },
       signal: AbortSignal.timeout(20000),
       redirect: "error"
     });
@@ -73,7 +73,7 @@ async function enrichGetmatchOffers(offers: GetmatchOffer[], limit = 8): Promise
   return Promise.all(offers.map(async (offer, index) => {
     if (index >= limit || !offer.id) return offer;
     try {
-      const detail = JSON.parse(await fetchPublic(`https://getmatch.ru/api/offers/${offer.id}`)) as GetmatchOffer;
+      const detail = JSON.parse(await fetchPublic(`https://getmatch.ru/api/offers/${offer.id}`, "application/json")) as GetmatchOffer;
       return { ...offer, ...detail };
     } catch {
       return offer;
@@ -131,7 +131,9 @@ function parseCards(html: string, host: string, pathPattern: RegExp): Card[] {
   const out = new Map<string, Card>();
   for (let i = 0; i < anchors.length; i++) {
     const a = anchors[i];
-    const url = new URL(a.href, host).toString();
+    const resolved = new URL(a.href, host);
+    if (resolved.protocol !== "https:" || resolved.hostname !== new URL(host).hostname) continue;
+    const url = resolved.toString();
     const block = html.slice(a.end, anchors[i + 1]?.start ?? Math.min(html.length, a.end + 7000));
     const context = decode(block).slice(0, 5000);
     const salary = (context.match(/(?:от\s*)?\d[\d\s]{2,}(?:\s*[—–-]\s*\d[\d\s]{2,})?\s*(?:₽|руб(?:лей)?|RUB|\$|USD|€)/i) || [])[0] ?? "";
@@ -210,7 +212,7 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
         for (let offset = 0; offset < 500; offset += 100) {
           url.searchParams.set("offset", String(offset));
           url.searchParams.set("limit", "100");
-          const payload = JSON.parse(await fetchPublic(url.toString())) as { meta?: { total?: number }; offers?: GetmatchOffer[] };
+          const payload = JSON.parse(await fetchPublic(url.toString(), "application/json")) as { meta?: { total?: number }; offers?: GetmatchOffer[] };
           const pageOffers = payload.offers ?? [];
           allOffers.push(...pageOffers);
           total = payload.meta?.total ?? total;
