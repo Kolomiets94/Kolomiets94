@@ -114,7 +114,9 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       url.searchParams.set("page", String(page));
       try {
         const html = await fetchPublic(url.toString());
-        const cards = parseCards(html, "https://gkjb.ru", /\/vacancy\/[a-z0-9-]+/i);
+        const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+        const cards = parseCards(html, "https://gkjb.ru", /\/vacancy\/[a-z0-9-]+/i)
+          .filter(card => terms.some(term => `${card.title} ${card.context}`.toLowerCase().includes(term)));
         const enriched = cards.length ? await enrichCards(cards) : [];
         const imported = enriched.length ? await importVacancies(enriched.map(card => toVacancy(card, "GeekJob"))) : "Импорт не выполнялся: карточки не найдены.";
         const text = enriched.length
@@ -139,8 +141,10 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       if (remote_only) url.pathname = "/vacancies/js_frontend/remote";
       try {
         const html = await fetchPublic(url.toString());
-        const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/[a-z0-9-]+/i)
-          .filter(c => !remote_only || c.remote);
+        const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+        const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/\d+-[a-z0-9-]+/i)
+          .filter(card => terms.some(term => `${card.title} ${card.context}`.toLowerCase().includes(term)))
+          .filter(card => !remote_only || card.remote);
         const enriched = cards.length ? await enrichCards(cards) : [];
         const imported = enriched.length ? await importVacancies(enriched.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: карточки не найдены.";
         const text = enriched.length
