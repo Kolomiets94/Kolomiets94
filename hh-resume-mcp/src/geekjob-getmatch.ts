@@ -39,6 +39,59 @@ async function fetchPublic(url: string) {
 }
 
 type Card = { title: string; url: string; company: string; salary: string; location: string; remote: boolean; context: string };
+type GetmatchOffer = {
+  id: number;
+  position: string;
+  url: string;
+  is_active?: boolean;
+  offer_description?: string | null;
+  description?: string | null;
+  company?: { name?: string } | null;
+  salary_display_from?: number | null;
+  salary_display_to?: number | null;
+  salary_currency?: string | null;
+  salary_description?: string | null;
+  location_items?: { label?: string; format?: string; exclude?: boolean }[];
+  location_requirements?: { city?: string; country?: string; exclude?: boolean }[];
+  stack?: string[];
+  specializations?: string[];
+  skills_objects?: { name?: string }[];
+};
+
+function getmatchSalary(offer: GetmatchOffer) {
+  const from = offer.salary_display_from;
+  const to = offer.salary_display_to;
+  const currency = offer.salary_currency === "USD" ? "$" : offer.salary_currency === "EUR" ? "€" : "₽";
+  const fmt = (n: number) => n.toLocaleString("ru-RU");
+  if (from != null && to != null) return \`\${fmt(from)}–\${fmt(to)} \${currency}\`;
+  if (from != null) return \`от \${fmt(from)} \${currency}\`;
+  if (to != null) return \`до \${fmt(to)} \${currency}\`;
+  return offer.salary_description || "";
+}
+
+function getmatchCard(offer: GetmatchOffer): Card {
+  const locations = (offer.location_items ?? []).filter(item => !item.exclude);
+  const requirements = (offer.location_requirements ?? []).filter(item => !item.exclude);
+  const remote = locations.some(item => item.format?.toLowerCase() === "remote");
+  const location = [
+    ...locations.map(item => item.label || ""),
+    ...requirements.map(item => item.city || item.country || "")
+  ].filter(Boolean).join(", ");
+  const stack = (offer.stack ?? []).join(", ");
+  const skills = (offer.skills_objects ?? []).map(item => item.name || "").filter(Boolean).join(", ");
+  const context = [offer.offer_description || "", offer.description || "", stack, skills, ...(offer.specializations ?? [])]
+    .filter(Boolean).join("\n").slice(0, 12000);
+  return {
+    title: offer.position || "Вакансия Getmatch",
+    url: new URL(offer.url, "https://getmatch.ru").toString(),
+    company: offer.company?.name || "",
+    salary: getmatchSalary(offer),
+    location,
+    remote,
+    context
+  };
+}
+
 
 function toVacancy(card: Card, source: "GeekJob" | "Getmatch") {
   const rub = card.salary.match(/(\d[\d\s]{2,})(?:\s*[—–-]\s*(\d[\d\s]{2,}))?\s*(?:₽|руб(?:лей)?|RUB)/i);
@@ -137,22 +190,22 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       remote_only: z.boolean().default(false)
     },
     async ({ query, remote_only }) => {
-      const url = new URL("https://getmatch.ru/vacancies");
-      url.searchParams.set("q", query);
-      if (remote_only) url.searchParams.set("format", "remote");
-      
+      const url = new URL("https://getmatch.ru/api/offers");
+      url.searchParams.set("offset", "0");
+      url.searchParams.set("limit", "100");
       try {
-        const html = await fetchPublic(url.toString());
+        const payload = JSON.parse(await fetchPublic(url.toString())) as { offers?: GetmatchOffer[] };
         const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-        const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/\d+-[a-z0-9-]+/i)
-          .filter(card => terms.some(term => `${card.title} ${card.context}`.toLowerCase().includes(term)))
+        const cards = (payload.offers ?? [])
+          .filter(offer => offer.is_active !== false)
+          .map(getmatchCard)
+          .filter(card => terms.some(term => \`\${card.title} \${card.context}\`.toLowerCase().includes(term)))
           .filter(card => !remote_only || card.remote);
-        const enriched = cards.length ? await enrichCards(cards) : [];
-        const imported = enriched.length ? await importVacancies(enriched.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: карточки не найдены.";
-        const text = enriched.length
-          ? formatCards(enriched)
-          : "Карточки не распознаны или нет совпадений. Проверьте каталог вручную.";
-        return { content: [{ type: "text", text: `Getmatch — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n${imported}\n\n${text}\n\nВажно: сервис ориентирован преимущественно на middle+; junior-позиции встречаются реже. Проверяйте грейд и актуальность вакансии.` }] };
+        const imported = cards.length ? await importVacancies(cards.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: API не вернул активные совпадающие вакансии.";
+        const text = cards.length
+          ? formatCards(cards)
+          : "API не вернул вакансии по заданным словам и фильтрам. Проверьте каталог вручную.";
+        return { content: [{ type: "text", text: `Getmatch API — ${cards.length} карточек-кандидатов\nИсточник: ${url}\n${imported}\n\n${text}\n\nВажно: сервис ориентирован преимущественно на middle+; junior-позиции встречаются реже. Проверяйте грейд и актуальность вакансии.` }] };
       } catch (e) {
         return { content: [{ type: "text", text: `Не удалось прочитать Getmatch: ${String(e)}\n${url}` }], isError: true };
       }
