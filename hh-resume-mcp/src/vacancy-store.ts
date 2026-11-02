@@ -84,12 +84,9 @@ function scoreVacancy(v: z.infer<typeof vacancySchema>) {
   return score;
 }
 
-export function registerVacancyStoreTools(server: McpServer) {
-  server.tool(
-    "career_import_vacancies",
-    "Импортировать найденные публичные вакансии из HH, Хабр Карьеры, GeekJob, Getmatch, Telegram и карьерных страниц в локальную базу. Дедупликация по URL, источник и дата сохраняются. Ничего не откликается и не отправляет.",
-    { vacancies: z.array(vacancySchema).min(1).max(100) },
-    async ({ vacancies }) => {
+export async function importVacancies(input: unknown[]) {
+  const vacancies = z.array(vacancySchema).min(1).max(100).parse(input);
+
       const rows = await readStore();
       const index = new Map(rows.map((v, i) => [fingerprint(v), i]));
       let inserted = 0;
@@ -125,6 +122,16 @@ export function registerVacancyStoreTools(server: McpServer) {
       }
       await writeStore(rows);
       return { content: [{ type: "text", text: `Импорт завершён. Новых: ${inserted}; обновлено совпадающих: ${updated}; всего в локальной базе: ${rows.length}. Данные сохранены в .career-data/vacancies.json.` }] };
+}
+
+export function registerVacancyStoreTools(server: McpServer) {
+  server.tool(
+    "career_import_vacancies",
+    "Импортировать найденные публичные вакансии в локальную базу с дедупликацией по URL. Ничего не откликается и не отправляет.",
+    { vacancies: z.array(vacancySchema).min(1).max(100) },
+    async ({ vacancies }) => {
+      const result = await importVacancies(vacancies);
+      return { content: [{ type: "text", text: result }] };
     }
   );
 
