@@ -157,7 +157,7 @@ export function registerVacancyStoreTools(server: McpServer) {
         if (remote_only && !v.remote) return false;
         if (min_salary && (v.salary_to ?? v.salary_from ?? 0) < min_salary) return false;
         if (status !== "all" && v.status !== status) return false;
-        if (exclude_irrelevant && /(^|\b)(qa|quality assurance|support engineer|customer support|оператор|тестировщик|специалист поддержки|техническая поддержка|менеджер продаж)(\b|$)/i.test(v.title)) return false;
+        if (exclude_irrelevant && /(qa|quality assurance|support engineer|customer support|оператор|тестировщик|специалист поддержки|техническая поддержка|менеджер продаж)/i.test(v.title)) return false;
         return true;
       }).sort((a, b) => b.score - a.score || b.found_at.localeCompare(a.found_at)).slice(0, limit);
       const output = filtered.map(v => [
