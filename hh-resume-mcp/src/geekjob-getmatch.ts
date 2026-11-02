@@ -63,9 +63,9 @@ function getmatchSalary(offer: GetmatchOffer) {
   const to = offer.salary_display_to;
   const currency = offer.salary_currency === "USD" ? "$" : offer.salary_currency === "EUR" ? "€" : "₽";
   const fmt = (n: number) => n.toLocaleString("ru-RU");
-  if (from != null && to != null) return \`\${fmt(from)}–\${fmt(to)} \${currency}\`;
-  if (from != null) return \`от \${fmt(from)} \${currency}\`;
-  if (to != null) return \`до \${fmt(to)} \${currency}\`;
+  if (from != null && to != null) return `${fmt(from)}–${fmt(to)} ${currency}`;
+  if (from != null) return `от ${fmt(from)} ${currency}`;
+  if (to != null) return `до ${fmt(to)} ${currency}`;
   return offer.salary_description || "";
 }
 
