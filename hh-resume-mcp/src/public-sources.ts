@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { importVacancies } from "./vacancy-store.js";
 
 const UA = "CareerMCP/0.3 (+public vacancy index; respectful low-volume requests)";
 const clean = (s: string) => s
@@ -66,10 +67,14 @@ export function registerPublicSourceTools(server: McpServer) {
       try {
         const html = await getHtml(url);
         const rows = extractHabr(html);
+        const imported = rows.length ? await importVacancies(rows.map(v => ({
+          title: v.title, url: v.url, source: "Хабр Карьера", description: v.context,
+          tags: ["frontend", query.replaceAll("_", " ")]
+        }))) : "Импорт не выполнялся: карточки не найдены.";
         const text = rows.length
           ? rows.map(v => `**${v.title}**\n${v.url}\nКонтекст карточки: ${v.context}`).join("\n\n---\n\n")
           : "Карточки вакансий не удалось извлечь из HTML. Откройте страницу вручную или повторите позже.";
-        return { content: [{ type: "text", text: `Источник: Хабр Карьера\nСтраница: ${url}\nНайдено ссылок-кандидатов: ${rows.length}\n\n${text}\n\nЭто первичный сбор ссылок; проверьте требования, зарплату и актуальность на исходной странице перед импортом.` }] };
+        return { content: [{ type: "text", text: `Источник: Хабр Карьера\nСтраница: ${url}\nНайдено ссылок-кандидатов: ${rows.length}\n${imported}\n\n${text}\n\nЭто первичный сбор ссылок; проверьте требования, зарплату и актуальность на исходной странице перед импортом.` }] };
       } catch (e) {
         return { content: [{ type: "text", text: `Не удалось прочитать публичную страницу Хабр Карьеры: ${String(e)}. Используйте ссылку вручную: ${url}` }], isError: true };
       }
@@ -95,7 +100,12 @@ export function registerPublicSourceTools(server: McpServer) {
           const html = await getHtml(url);
           const posts = extractTelegram(html, channel).slice(-max_posts_per_channel);
           const matched = posts.filter(p => terms.some(t => p.context.toLowerCase().includes(t)));
-          output.push(`### @${channel} — ${matched.length} совпадений из ${posts.length} последних сообщений`);
+          const vacancyLike = matched.filter(p => /(ваканси|ищем|требуется|открыта позиция|зарплат|отклик|резюме)/i.test(p.context));
+          const imported = vacancyLike.length ? await importVacancies(vacancyLike.map(p => ({
+            title: p.title.slice(0, 300), url: p.url, source: "Telegram",
+            description: p.context.slice(0, 12000), tags: ["telegram", channel, ...terms.filter(t => p.context.toLowerCase().includes(t)).slice(0, 10)]
+          }))) : "Импорт не выполнялся: публикации с явными признаками вакансии не найдены.";
+          output.push(`### @${channel} — ${matched.length} совпадений из ${posts.length} последних сообщений\\n${imported}`);
           output.push(matched.map(p => `**${p.title}**\n${p.url}\n${p.context}`).join("\n\n---\n\n") || "Совпадений по ключевым словам не найдено.");
         } catch (e) {
           output.push(`### @${channel}\nНе удалось прочитать публичную ленту: ${String(e)}. Ссылка: ${url}`);
