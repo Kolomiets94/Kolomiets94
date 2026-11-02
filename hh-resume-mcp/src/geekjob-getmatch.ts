@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { importVacancies } from "./vacancy-store.js";
 
 const UA = "CareerMCP/0.4 (public vacancy index; low-volume read-only)";
 const decode = (s: string) => s
@@ -38,6 +39,18 @@ async function fetchPublic(url: string) {
 }
 
 type Card = { title: string; url: string; company: string; salary: string; location: string; remote: boolean; context: string };
+
+function toVacancy(card: Card, source: "GeekJob" | "Getmatch") {
+  const rub = card.salary.match(/(\\d[\\d\\s]{2,})(?:\\s*[—–-]\\s*(\\d[\\d\\s]{2,}))?\\s*(?:₽|руб(?:лей)?|RUB)/i);
+  const amount = (v?: string) => v ? Number(v.replace(/\\s/g, "")) : undefined;
+  return {
+    title: card.title.slice(0, 300), company: card.company.slice(0, 300), url: card.url, source,
+    location: card.location.slice(0, 200), remote: card.remote,
+    salary_from: amount(rub?.[1]) ?? null, salary_to: amount(rub?.[2]) ?? amount(rub?.[1]) ?? null,
+    currency: "RUB", description: card.context.slice(0, 12000),
+    tags: ["frontend", "react", "typescript", source.toLowerCase()]
+  };
+}
 
 function parseCards(html: string, host: string, pathPattern: RegExp): Card[] {
   const anchors: { href: string; title: string; start: number; end: number }[] = [];
