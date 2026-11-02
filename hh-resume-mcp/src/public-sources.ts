@@ -75,7 +75,7 @@ export function registerPublicSourceTools(server: McpServer) {
         rows = await Promise.all(rows.slice(0, 8).map(async row => {
           try {
             const detailHtml = await getHtml(row.url);
-            const detail = clean((detailHtml.match(/<(?:main|article)\\b[^>]*>([\\s\\S]*?)<\\/(?:main|article)>/i) || [])[1] ?? detailHtml).slice(0, 11000);
+            const detail = clean((detailHtml.match(/<(?:main|article)\b[^>]*>([\s\S]*?)<\/(?:main|article)>/i) || [])[1] ?? detailHtml).slice(0, 11000);
             return { ...row, context: detail || row.context };
           } catch {
             return row;
