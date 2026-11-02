@@ -30,7 +30,7 @@ try {
   const duplicate = await importVacancies([{
     ...vacancy,
     url: "https://example.com/jobs/123",
-    description: "Обновлённое описание"
+    description: "Обновлённое описание с дополнительными подробностями о React и TypeScript"
   }]);
   assert.match(duplicate, /Новых: 0/);
   assert.match(duplicate, /обновлено совпадающих: 1/i);
@@ -38,9 +38,28 @@ try {
   const savedPath = join(sandbox, ".career-data", "vacancies.json");
   const saved = JSON.parse(await readFile(savedPath, "utf8"));
   assert.equal(saved.length, 1);
-  assert.equal(saved[0].description, "Обновлённое описание");
+  assert.equal(saved[0].description, "Обновлённое описание с дополнительными подробностями о React и TypeScript");
   assert.equal(saved[0].status, "new");
   assert.equal(saved[0].salary_from, 60000);
+
+  await importVacancies([{
+    ...vacancy,
+    company: "",
+    location: "",
+    remote: false,
+    salary_from: null,
+    salary_to: null,
+    currency: "RUB",
+    description: "",
+    tags: []
+  }]);
+  const afterSparseUpdate = JSON.parse(await readFile(savedPath, "utf8"));
+  assert.equal(afterSparseUpdate[0].company, "Example");
+  assert.equal(afterSparseUpdate[0].location, "Екатеринбург");
+  assert.equal(afterSparseUpdate[0].remote, true);
+  assert.equal(afterSparseUpdate[0].description, "Обновлённое описание с дополнительными подробностями о React и TypeScript");
+  assert.deepEqual(afterSparseUpdate[0].tags, ["frontend", "react"]);
+  assert.equal(afterSparseUpdate[0].salary_from, 60000);
 
   await mkdir(join(sandbox, ".career-data"), { recursive: true });
   await writeFile(savedPath, "{broken json", "utf8");
