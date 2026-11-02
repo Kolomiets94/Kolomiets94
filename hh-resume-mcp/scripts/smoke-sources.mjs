@@ -11,8 +11,9 @@ const targets = [
   },
   {
     name: "Getmatch",
-    url: "https://getmatch.ru/vacancies?q=Frontend",
-    pattern: /href=["']\/vacancies\/\d+-[a-z0-9-]+/gi
+    url: "https://getmatch.ru/api/offers?offset=0&limit=20",
+    jsonOffers: true,
+    pattern: /./
   },
   {
     name: "Telegram public feed",
@@ -32,7 +33,7 @@ for (const target of targets) {
       signal: AbortSignal.timeout(20000)
     });
     const html = await response.text();
-    const count = [...html.matchAll(target.pattern)].length;
+    const count = target.jsonOffers ? (JSON.parse(html).offers ?? []).length : [...html.matchAll(target.pattern)].length;
     console.log("[" + (response.ok && count > 0 ? "PASS" : "FAIL") + "] " + target.name + ": HTTP " + response.status + ", " + html.length + " bytes, " + count + " matching public links/cards");
     if (target.name === "Getmatch" && count === 0) {
       const titleStart = html.indexOf("<title");
