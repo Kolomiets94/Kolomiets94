@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const sources = ["HH.ru", "Хабр Карьера", "GeekJob", "Getmatch", "Telegram", "Company site", "SuperJob", "Работа России", "LinkedIn"] as const;
@@ -50,7 +50,42 @@ async function readStore(): Promise<Vacancy[]> {
 
 async function writeStore(rows: Vacancy[]) {
   await mkdir(dataDir, { recursive: true });
-  await writeFile(dataFile, JSON.stringify(rows, null, 2), "utf8");
+  const temporaryFile = join(dataDir, ".vacancies." + process.pid + ".tmp");
+  try {
+    await writeFile(temporaryFile, JSON.stringify(rows, null, 2), "utf8");
+    await rename(temporaryFile, dataFile);
+  } catch (error) {
+    await unlink(temporaryFile).catch(() => undefined);
+    throw error;
+  }
+}
+
+function mergeVacancy(existing: Vacancy, incoming: z.infer<typeof vacancySchema>, now: string): Vacancy {
+  const merged: Vacancy = {
+    ...existing,
+    ...incoming,
+    company: incoming.company || existing.company,
+    location: incoming.location || existing.location,
+    remote: incoming.remote || existing.remote,
+    employment: incoming.employment || existing.employment,
+    salary_from: incoming.salary_from ?? existing.salary_from,
+    salary_to: incoming.salary_to ?? existing.salary_to,
+    currency: incoming.salary_from != null || incoming.salary_to != null ? incoming.currency : existing.currency,
+    description: incoming.description.length >= existing.description.length
+      ? incoming.description
+      : existing.description,
+    published_at: incoming.published_at || existing.published_at,
+    contact_name: incoming.contact_name || existing.contact_name,
+    contact_public_url: incoming.contact_public_url || existing.contact_public_url,
+    tags: incoming.tags.length ? incoming.tags : existing.tags,
+    id: existing.id,
+    found_at: existing.found_at,
+    updated_at: now,
+    status: existing.status,
+    score: existing.score
+  };
+  merged.score = scoreVacancy(merged);
+  return merged;
 }
 
 function canonicalUrl(value: string) {
@@ -101,14 +136,7 @@ export async function importVacancies(input: unknown[]) {
         const key = fingerprint(parsed);
         const existing = index.get(key);
         if (existing !== undefined) {
-          rows[existing] = {
-            ...rows[existing],
-            ...parsed,
-            id: rows[existing].id,
-            found_at: rows[existing].found_at,
-            updated_at: now,
-            score: scoreVacancy(parsed)
-          };
+          rows[existing] = mergeVacancy(rows[existing], parsed, now);
           updated++;
         } else {
           const row: Vacancy = {
