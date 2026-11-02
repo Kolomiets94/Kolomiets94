@@ -106,13 +106,13 @@ function getmatchCard(offer: GetmatchOffer): Card {
 
 
 function toVacancy(card: Card, source: "GeekJob" | "Getmatch") {
-  const rub = card.salary.match(/(\d[\d\s]{2,})(?:\s*[—–-]\s*(\d[\d\s]{2,}))?\s*(?:₽|руб(?:лей)?|RUB|\\$|USD|€|EUR)/i);
+  const rub = card.salary.match(/(\d[\d\s]{2,})(?:\s*[—–-]\s*(\d[\d\s]{2,}))?\s*(?:₽|руб(?:лей)?|RUB|\$|USD|€|EUR)/i);
   const amount = (v?: string) => v ? Number(v.replace(/\s/g, "")) : undefined;
   return {
     title: card.title.slice(0, 300), company: card.company.slice(0, 300), url: card.url, source,
     location: card.location.slice(0, 200), remote: card.remote,
     salary_from: amount(rub?.[1]) ?? null, salary_to: amount(rub?.[2]) ?? amount(rub?.[1]) ?? null,
-    currency: /\\$|USD/i.test(card.salary) ? "USD" : /€|EUR/i.test(card.salary) ? "EUR" : "RUB", description: decode(card.context).slice(0, 12000),
+    currency: /\$|USD/i.test(card.salary) ? "USD" : /€|EUR/i.test(card.salary) ? "EUR" : "RUB", description: decode(card.context).slice(0, 12000),
     tags: [source.toLowerCase(), ...["frontend", "react", "typescript", "javascript"].filter(tag => `${card.title} ${card.context}`.toLowerCase().includes(tag))]
   };
 }
@@ -203,17 +203,28 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
     },
     async ({ query, remote_only }) => {
       const url = new URL("https://getmatch.ru/api/offers");
-      url.searchParams.set("offset", "0");
-      url.searchParams.set("limit", "100");
+      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
       try {
-        const payload = JSON.parse(await fetchPublic(url.toString())) as { offers?: GetmatchOffer[] };
-        const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-        const enrichedOffers = await enrichGetmatchOffers(payload.offers ?? []);
-        const cards = enrichedOffers
+        const allOffers: GetmatchOffer[] = [];
+        let total = 0;
+        for (let offset = 0; offset < 500; offset += 100) {
+          url.searchParams.set("offset", String(offset));
+          url.searchParams.set("limit", "100");
+          const payload = JSON.parse(await fetchPublic(url.toString())) as { meta?: { total?: number }; offers?: GetmatchOffer[] };
+          const pageOffers = payload.offers ?? [];
+          allOffers.push(...pageOffers);
+          total = payload.meta?.total ?? total;
+          if (!pageOffers.length || pageOffers.length < 100 || (total > 0 && offset + pageOffers.length >= total)) break;
+        }
+        const candidates = allOffers
           .filter(offer => offer.is_active !== false)
-          .map(getmatchCard)
-          .filter(card => terms.some(term => \`\${card.title} \${card.context}\`.toLowerCase().includes(term)))
-          .filter(card => !remote_only || card.remote);
+          .filter(offer => {
+            const searchable = [offer.position, offer.offer_description, offer.description, ...(offer.stack ?? []), ...(offer.specializations ?? [])].join(" ").toLowerCase();
+            return terms.some(term => searchable.includes(term));
+          })
+          .filter(offer => !remote_only || (offer.location_items ?? []).some(item => item.format?.toLowerCase() === "remote" && !item.exclude));
+        const enrichedOffers = await enrichGetmatchOffers(candidates);
+        const cards = enrichedOffers.map(getmatchCard);
         const imported = cards.length ? await importVacancies(cards.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: API не вернул активные совпадающие вакансии.";
         const text = cards.length
           ? formatCards(cards)
