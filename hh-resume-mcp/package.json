@@ -10,7 +10,9 @@
     "mcp": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "playwright": "npx -y @playwright/mcp@latest",
-    "smoke:sources": "node scripts/smoke-sources.mjs"
+    "smoke:sources": "node scripts/smoke-sources.mjs",
+    "smoke:store": "tsx scripts/smoke-store.ts",
+    "check:local": "npm run typecheck && npm run smoke:store && npm run smoke:sources"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
