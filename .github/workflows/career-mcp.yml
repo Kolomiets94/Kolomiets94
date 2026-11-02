@@ -1,4 +1,4 @@
-name: Career MCP typecheck and live source checks
+name: Career MCP typecheck and resilient source checks
 
 on:
   push:
