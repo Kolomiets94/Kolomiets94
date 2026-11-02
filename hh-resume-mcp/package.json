@@ -9,7 +9,7 @@
   "scripts": {
     "mcp": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
-    "playwright": "npx @playwright/mcp@latest"
+    "playwright": "npx -y @playwright/mcp@latest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
