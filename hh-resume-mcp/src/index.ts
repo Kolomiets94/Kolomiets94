@@ -142,4 +142,4 @@ server.tool(
     }]
   })
 );
-\nawait server.connect(new StdioServerTransport());
+await server.connect(new StdioServerTransport());
