@@ -11,7 +11,7 @@ const targets = [
   },
   {
     name: "Getmatch",
-    url: "https://getmatch.ru/vacancies/js_frontend",
+    url: "https://getmatch.ru/vacancies?q=Frontend",
     pattern: /href=["']\/vacancies\/\d+-[a-z0-9-]+/gi
   },
   {
