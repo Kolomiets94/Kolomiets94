@@ -41,8 +41,8 @@ async function fetchPublic(url: string) {
 type Card = { title: string; url: string; company: string; salary: string; location: string; remote: boolean; context: string };
 
 function toVacancy(card: Card, source: "GeekJob" | "Getmatch") {
-  const rub = card.salary.match(/(\\d[\\d\\s]{2,})(?:\\s*[—–-]\\s*(\\d[\\d\\s]{2,}))?\\s*(?:₽|руб(?:лей)?|RUB)/i);
-  const amount = (v?: string) => v ? Number(v.replace(/\\s/g, "")) : undefined;
+  const rub = card.salary.match(/(\d[\d\s]{2,})(?:\s*[—–-]\s*(\d[\d\s]{2,}))?\s*(?:₽|руб(?:лей)?|RUB)/i);
+  const amount = (v?: string) => v ? Number(v.replace(/\s/g, "")) : undefined;
   return {
     title: card.title.slice(0, 300), company: card.company.slice(0, 300), url: card.url, source,
     location: card.location.slice(0, 200), remote: card.remote,
@@ -111,10 +111,11 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       try {
         const html = await fetchPublic(url.toString());
         const cards = parseCards(html, "https://gkjb.ru", /\/vacancy\/[a-z0-9-]+/i);
+        const imported = cards.length ? await importVacancies(cards.map(card => toVacancy(card, "GeekJob"))) : "Импорт не выполнялся: карточки не найдены.";
         const text = cards.length
           ? (await enrichCards(cards)).join("\n\n---\n\n")
           : "Карточки не распознаны. Возможно, сайт изменил HTML или выдача требует другого параметра.";
-        return { content: [{ type: "text", text: `Geekjob — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n\n${text}\n\nПроверьте грейд, занятость, зарплату и дату на странице вакансии перед импортом.` }] };
+        return { content: [{ type: "text", text: `Geekjob — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n${imported}\n\n${text}\n\nПроверьте грейд, занятость, зарплату и дату на странице вакансии перед импортом.` }] };
       } catch (e) {
         return { content: [{ type: "text", text: `Не удалось прочитать Geekjob: ${String(e)}\n${url}` }], isError: true };
       }
@@ -136,10 +137,11 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
         const html = await fetchPublic(url.toString());
         const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/[a-z0-9-]+/i)
           .filter(c => !remote_only || c.remote);
+        const imported = cards.length ? await importVacancies(cards.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: карточки не найдены.";
         const text = cards.length
           ? (await enrichCards(cards)).join("\n\n---\n\n")
           : "Карточки не распознаны или нет совпадений. Проверьте каталог вручную.";
-        return { content: [{ type: "text", text: `Getmatch — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n\n${text}\n\nВажно: сервис ориентирован преимущественно на middle+; junior-позиции встречаются реже. Проверяйте грейд и актуальность вакансии.` }] };
+        return { content: [{ type: "text", text: `Getmatch — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n${imported}\n\n${text}\n\nВажно: сервис ориентирован преимущественно на middle+; junior-позиции встречаются реже. Проверяйте грейд и актуальность вакансии.` }] };
       } catch (e) {
         return { content: [{ type: "text", text: `Не удалось прочитать Getmatch: ${String(e)}\n${url}` }], isError: true };
       }
