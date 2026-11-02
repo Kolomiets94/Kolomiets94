@@ -37,10 +37,14 @@ const dataFile = join(dataDir, "vacancies.json");
 async function readStore(): Promise<Vacancy[]> {
   try {
     const raw = await readFile(dataFile, "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed as Vacancy[] : [];
-  } catch {
-    return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      throw new Error("Локальная база вакансий повреждена: ожидался JSON-массив.");
+    }
+    return parsed as Vacancy[];
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw error;
   }
 }
 
