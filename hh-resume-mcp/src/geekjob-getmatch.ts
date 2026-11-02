@@ -65,6 +65,24 @@ function parseCards(html: string, host: string, pathPattern: RegExp): Card[] {
   return [...out.values()];
 }
 
+async function enrichCards(cards: Card[], limit = 8) {
+  const enriched: string[] = [];
+  for (const card of cards.slice(0, limit)) {
+    let detail = "";
+    try {
+      const html = await fetchPublic(card.url);
+      const description = (html.match(/<meta\\s+name=["']description["']\\s+content=["']([^"']+)/i) || [])[1] ?? "";
+      const main = (html.match(/<(?:main|article)\\b[^>]*>([\\s\\S]*?)<\\/(?:main|article)>/i) || [])[1] ?? html;
+      detail = decode(main).slice(0, 6500);
+      if (description) detail = `Описание: ${decode(description)}\\n${detail}`;
+    } catch (e) {
+      detail = `Не удалось открыть карточку для подробностей: ${String(e)}`;
+    }
+    enriched.push(`**${card.title}**\\nКомпания: ${card.company || "не извлечена"}\\nЗарплата: ${card.salary || "не извлечена"}\\nЛокация: ${card.location || "не извлечена"}\\nУдалённо: ${card.remote ? "да" : "не подтверждено"}\\nСсылка: ${card.url}\\nТекст карточки: ${detail || card.context}`);
+  }
+  return enriched;
+}
+
 export function registerGeekjobGetmatchTools(server: McpServer) {
   server.tool(
     "career_search_geekjob_vacancies",
