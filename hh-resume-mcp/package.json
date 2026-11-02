@@ -9,7 +9,8 @@
   "scripts": {
     "mcp": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
-    "playwright": "npx -y @playwright/mcp@latest"
+    "playwright": "npx -y @playwright/mcp@latest",
+    "smoke:sources": "node scripts/smoke-sources.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
