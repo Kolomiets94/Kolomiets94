@@ -69,6 +69,18 @@ function getmatchSalary(offer: GetmatchOffer) {
   return offer.salary_description || "";
 }
 
+async function enrichGetmatchOffers(offers: GetmatchOffer[], limit = 8): Promise<GetmatchOffer[]> {
+  return Promise.all(offers.map(async (offer, index) => {
+    if (index >= limit || !offer.id) return offer;
+    try {
+      const detail = JSON.parse(await fetchPublic(`https://getmatch.ru/api/offers/${offer.id}`)) as GetmatchOffer;
+      return { ...offer, ...detail };
+    } catch {
+      return offer;
+    }
+  }));
+}
+
 function getmatchCard(offer: GetmatchOffer): Card {
   const locations = (offer.location_items ?? []).filter(item => !item.exclude);
   const requirements = (offer.location_requirements ?? []).filter(item => !item.exclude);
@@ -94,13 +106,13 @@ function getmatchCard(offer: GetmatchOffer): Card {
 
 
 function toVacancy(card: Card, source: "GeekJob" | "Getmatch") {
-  const rub = card.salary.match(/(\d[\d\s]{2,})(?:\s*[—–-]\s*(\d[\d\s]{2,}))?\s*(?:₽|руб(?:лей)?|RUB)/i);
+  const rub = card.salary.match(/(\d[\d\s]{2,})(?:\s*[—–-]\s*(\d[\d\s]{2,}))?\s*(?:₽|руб(?:лей)?|RUB|\\$|USD|€|EUR)/i);
   const amount = (v?: string) => v ? Number(v.replace(/\s/g, "")) : undefined;
   return {
     title: card.title.slice(0, 300), company: card.company.slice(0, 300), url: card.url, source,
     location: card.location.slice(0, 200), remote: card.remote,
     salary_from: amount(rub?.[1]) ?? null, salary_to: amount(rub?.[2]) ?? amount(rub?.[1]) ?? null,
-    currency: "RUB", description: card.context.slice(0, 12000),
+    currency: /\\$|USD/i.test(card.salary) ? "USD" : /€|EUR/i.test(card.salary) ? "EUR" : "RUB", description: decode(card.context).slice(0, 12000),
     tags: [source.toLowerCase(), ...["frontend", "react", "typescript", "javascript"].filter(tag => `${card.title} ${card.context}`.toLowerCase().includes(tag))]
   };
 }
@@ -196,7 +208,8 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       try {
         const payload = JSON.parse(await fetchPublic(url.toString())) as { offers?: GetmatchOffer[] };
         const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-        const cards = (payload.offers ?? [])
+        const enrichedOffers = await enrichGetmatchOffers(payload.offers ?? []);
+        const cards = enrichedOffers
           .filter(offer => offer.is_active !== false)
           .map(getmatchCard)
           .filter(card => terms.some(term => \`\${card.title} \${card.context}\`.toLowerCase().includes(term)))
