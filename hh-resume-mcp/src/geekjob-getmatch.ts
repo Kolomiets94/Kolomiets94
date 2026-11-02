@@ -14,11 +14,22 @@ const decode = (s: string) => s
   .replace(/\s+/g, " ").trim();
 
 async function fetchPublic(url: string, accept = "text/html,application/xhtml+xml") {
-  const response = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: accept },
-    signal: AbortSignal.timeout(20000),
-    redirect: "manual"
-  });
+  let response: Response | undefined;
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      response = await fetch(url, {
+        headers: { "User-Agent": UA, Accept: accept },
+        signal: AbortSignal.timeout(20000),
+        redirect: "manual"
+      });
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)));
+    }
+  }
+  if (!response) throw lastError instanceof Error ? lastError : new Error("Public source fetch failed");
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get("location");
     if (!location) throw new Error(`HTTP ${response.status} without Location`);
