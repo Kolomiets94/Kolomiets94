@@ -101,7 +101,7 @@ export function registerPublicSourceTools(server: McpServer) {
     "Прочитать публичную веб-ленту t.me/s/<channel> и извлечь сообщения с вакансиями. Не использует Telegram-аккаунт, не читает закрытые каналы и не отправляет сообщения.",
     {
       channels: z.array(z.string().regex(/^[a-zA-Z0-9_]{5,32}$/)).min(1).max(10)
-        .default(["forfrontend", "frontend_rabota", "senior_frontender", "job_react"]),
+        .default(["forfrontend", "frontend_vacancy", "frontend_rabota", "rabotafrontend", "rekrutai_FE"]),
       keywords: z.array(z.string().min(2).max(60)).max(20)
         .default(["frontend", "react", "typescript", "javascript", "верстальщик", "html", "css"]),
       max_posts_per_channel: z.number().int().min(1).max(30).default(15)
