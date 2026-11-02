@@ -125,35 +125,38 @@ function scoreVacancy(v: z.infer<typeof vacancySchema>) {
 
 export async function importVacancies(input: unknown[]) {
   const vacancies = z.array(vacancySchema).min(1).max(100).parse(input);
+  const rows = await readStore();
+  const index = new Map<string, number>(rows.map((v, i) => [fingerprint(v), i] as const));
+  let inserted = 0;
+  let updated = 0;
 
-      const rows = await readStore();
-      const index = new Map<string, number>(rows.map((v, i) => [fingerprint(v), i] as const));
-      let inserted = 0;
-      let updated = 0;
-      for (const raw of vacancies) {
-        const parsed = vacancySchema.parse(raw);
-        const now = new Date().toISOString();
-        const key = fingerprint(parsed);
-        const existing = index.get(key);
-        if (existing !== undefined) {
-          rows[existing] = mergeVacancy(rows[existing], parsed, now);
-          updated++;
-        } else {
-          const row: Vacancy = {
-            ...parsed,
-            id: `v_${Date.now().toString(36)}_${(rows.length + 1).toString(36)}`,
-            found_at: parsed.found_at || now,
-            updated_at: now,
-            score: scoreVacancy(parsed),
-            status: "new"
-          };
-          rows.push(row);
-          index.set(key, rows.length - 1);
-          inserted++;
-        }
-      }
-      await writeStore(rows);
-      return `Импорт завершён. Новых: ${inserted}; обновлено совпадающих: ${updated}; всего в локальной базе: ${rows.length}. Данные сохранены в .career-data/vacancies.json.`;
+  for (const raw of vacancies) {
+    const parsed = vacancySchema.parse(raw);
+    const now = new Date().toISOString();
+    const key = fingerprint(parsed);
+    const existing = index.get(key);
+
+    if (existing !== undefined) {
+      rows[existing] = mergeVacancy(rows[existing], parsed, now);
+      updated++;
+      continue;
+    }
+
+    const row: Vacancy = {
+      ...parsed,
+      id: `v_${Date.now().toString(36)}_${(rows.length + 1).toString(36)}`,
+      found_at: parsed.found_at || now,
+      updated_at: now,
+      score: scoreVacancy(parsed),
+      status: "new"
+    };
+    rows.push(row);
+    index.set(key, rows.length - 1);
+    inserted++;
+  }
+
+  await writeStore(rows);
+  return `Импорт завершён. Новых: ${inserted}; обновлено совпадающих: ${updated}; всего в локальной базе: ${rows.length}. Данные сохранены в .career-data/vacancies.json.`;
 }
 
 export function registerVacancyStoreTools(server: McpServer) {
