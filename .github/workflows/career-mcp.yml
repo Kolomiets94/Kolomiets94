@@ -1,0 +1,29 @@
+name: Career MCP typecheck
+
+on:
+  push:
+    branches: [hh-resume-mcp]
+    paths:
+      - "hh-resume-mcp/**"
+      - ".github/workflows/career-mcp.yml"
+  pull_request:
+    branches: [hh-resume-mcp]
+    paths:
+      - "hh-resume-mcp/**"
+      - ".github/workflows/career-mcp.yml"
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hh-resume-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: hh-resume-mcp/package-lock.json
+      - run: npm install
+      - run: npm run typecheck
