@@ -124,7 +124,7 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
         const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/[a-z0-9-]+/i)
           .filter(c => !remote_only || c.remote);
         const text = cards.length
-          ? cards.map(c => `**${c.title}**\n${c.company ? `Компания: ${c.company}\n` : ""}${c.salary ? `Зарплата: ${c.salary}\n` : ""}${c.location ? `Локация: ${c.location}\n` : ""}Удалённо: ${c.remote ? "да" : "не подтверждено"}\n${c.url}\nКонтекст: ${c.context}`).join("\n\n---\n\n")
+          ? (await enrichCards(cards)).join("\n\n---\n\n")
           : "Карточки не распознаны или нет совпадений. Проверьте каталог вручную.";
         return { content: [{ type: "text", text: `Getmatch — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n\n${text}\n\nВажно: сервис ориентирован преимущественно на middle+; junior-позиции встречаются реже. Проверяйте грейд и актуальность вакансии.` }] };
       } catch (e) {
