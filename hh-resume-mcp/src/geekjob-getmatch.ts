@@ -137,7 +137,9 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       remote_only: z.boolean().default(false)
     },
     async ({ query, remote_only }) => {
-      const url = new URL("https://getmatch.ru/vacancies/js_frontend");
+      const url = new URL("https://getmatch.ru/vacancies");
+      url.searchParams.set("q", query);
+      if (remote_only) url.searchParams.set("format", "remote");
       
       try {
         const html = await fetchPublic(url.toString());
