@@ -28,23 +28,13 @@ for (const target of targets) {
     const response = await fetch(target.url, {
       headers: {
         "User-Agent": "CareerMCP-source-smoke-test/0.1 (read-only)",
-        "Accept": "text/html,application/xhtml+xml"
+        "Accept": target.jsonOffers ? "application/json" : "text/html,application/xhtml+xml"
       },
       signal: AbortSignal.timeout(20000)
     });
     const html = await response.text();
     const count = target.jsonOffers ? (JSON.parse(html).offers ?? []).length : [...html.matchAll(target.pattern)].length;
     console.log("[" + (response.ok && count > 0 ? "PASS" : "FAIL") + "] " + target.name + ": HTTP " + response.status + ", " + html.length + " bytes, " + count + " matching public links/cards");
-    if (target.name === "Getmatch" && count === 0) {
-      const titleStart = html.indexOf("<title");
-      const titleEnd = html.indexOf("</title>");
-      console.log("Getmatch page title: " + (titleStart >= 0 && titleEnd > titleStart ? html.slice(titleStart, titleEnd + 8) : "not found"));
-      console.log("Getmatch script bundles: " + [...html.matchAll(/<script[^>]+src=["']([^"']+)/gi)].map(m => m[1]).slice(0, 20).join(" | "));
-      for (const key of ["__NEXT_DATA__", "application/json", "vacancies/", "graphql", "api/"]) {
-        const index = html.toLowerCase().indexOf(key.toLowerCase());
-        if (index >= 0) console.log("Getmatch " + key + " snippet: " + html.slice(Math.max(0, index - 180), index + 650));
-      }
-    }
     if (!response.ok || count === 0) failed = true;
   } catch (error) {
     console.log("[FAIL] " + target.name + ": " + String(error));
