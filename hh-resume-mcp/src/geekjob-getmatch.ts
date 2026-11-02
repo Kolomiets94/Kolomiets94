@@ -78,22 +78,27 @@ function parseCards(html: string, host: string, pathPattern: RegExp): Card[] {
   return [...out.values()];
 }
 
-async function enrichCards(cards: Card[], limit = 8) {
-  const enriched: string[] = [];
-  for (const card of cards.slice(0, limit)) {
-    let detail = "";
+async function enrichCards(cards: Card[], limit = 8): Promise<Card[]> {
+  return Promise.all(cards.map(async (card, index) => {
+    if (index >= limit) return card;
     try {
       const html = await fetchPublic(card.url);
       const description = (html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)/i) || [])[1] ?? "";
       const main = (html.match(/<(?:main|article)\b[^>]*>([\s\S]*?)<\/(?:main|article)>/i) || [])[1] ?? html;
-      detail = decode(main).slice(0, 6500);
-      if (description) detail = `Описание: ${decode(description)}\n${detail}`;
-    } catch (e) {
-      detail = `Не удалось открыть карточку для подробностей: ${String(e)}`;
+      const detail = decode(main).slice(0, 6500);
+      const combined = [description ? `Описание: ${decode(description)}` : "", detail]
+        .filter(Boolean).join("\\n").slice(0, 12000);
+      return { ...card, context: combined || card.context };
+    } catch {
+      return card;
     }
-    enriched.push(`**${card.title}**\nКомпания: ${card.company || "не извлечена"}\nЗарплата: ${card.salary || "не извлечена"}\nЛокация: ${card.location || "не извлечена"}\nУдалённо: ${card.remote ? "да" : "не подтверждено"}\nСсылка: ${card.url}\nТекст карточки: ${detail || card.context}`);
-  }
-  return enriched;
+  }));
+}
+
+function formatCards(cards: Card[]) {
+  return cards.map(card =>
+    `**${card.title}**\nКомпания: ${card.company || "не извлечена"}\nЗарплата: ${card.salary || "не извлечена"}\nЛокация: ${card.location || "не извлечена"}\nУдалённо: ${card.remote ? "да" : "не подтверждено"}\nСсылка: ${card.url}\nТекст карточки: ${card.context}`
+  ).join("\n\n---\n\n");
 }
 
 export function registerGeekjobGetmatchTools(server: McpServer) {
@@ -111,9 +116,10 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
       try {
         const html = await fetchPublic(url.toString());
         const cards = parseCards(html, "https://gkjb.ru", /\/vacancy\/[a-z0-9-]+/i);
-        const imported = cards.length ? await importVacancies(cards.map(card => toVacancy(card, "GeekJob"))) : "Импорт не выполнялся: карточки не найдены.";
-        const text = cards.length
-          ? (await enrichCards(cards)).join("\n\n---\n\n")
+        const enriched = cards.length ? await enrichCards(cards) : [];
+        const imported = enriched.length ? await importVacancies(enriched.map(card => toVacancy(card, "GeekJob"))) : "Импорт не выполнялся: карточки не найдены.";
+        const text = enriched.length
+          ? formatCards(enriched)
           : "Карточки не распознаны. Возможно, сайт изменил HTML или выдача требует другого параметра.";
         return { content: [{ type: "text", text: `Geekjob — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n${imported}\n\n${text}\n\nПроверьте грейд, занятость, зарплату и дату на странице вакансии перед импортом.` }] };
       } catch (e) {
@@ -137,9 +143,10 @@ export function registerGeekjobGetmatchTools(server: McpServer) {
         const html = await fetchPublic(url.toString());
         const cards = parseCards(html, "https://getmatch.ru", /\/vacancies\/[a-z0-9-]+/i)
           .filter(c => !remote_only || c.remote);
-        const imported = cards.length ? await importVacancies(cards.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: карточки не найдены.";
-        const text = cards.length
-          ? (await enrichCards(cards)).join("\n\n---\n\n")
+        const enriched = cards.length ? await enrichCards(cards) : [];
+        const imported = enriched.length ? await importVacancies(enriched.map(card => toVacancy(card, "Getmatch"))) : "Импорт не выполнялся: карточки не найдены.";
+        const text = enriched.length
+          ? formatCards(enriched)
           : "Карточки не распознаны или нет совпадений. Проверьте каталог вручную.";
         return { content: [{ type: "text", text: `Getmatch — ${cards.length} карточек-кандидатов\nСтраница: ${url}\n${imported}\n\n${text}\n\nВажно: сервис ориентирован преимущественно на middle+; junior-позиции встречаются реже. Проверяйте грейд и актуальность вакансии.` }] };
       } catch (e) {
